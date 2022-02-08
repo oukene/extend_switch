@@ -1,0 +1,16 @@
+{
+  "domain": "extend_switch",
+  "name": "Extend Switch",
+  "config_flow": true,
+  "documentation": "https://github.com/oukene/Extend_Switch",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": [],
+  "homekit": {},
+  "dependencies": [],
+  "codeowners": [
+    "@oukene"
+  ],
+  "iot_class": "",
+  "version": "1.0.0"
+}

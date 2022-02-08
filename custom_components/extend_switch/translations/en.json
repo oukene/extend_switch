@@ -1,0 +1,34 @@
+{
+    "title": "Extend Switch",
+    "config": {
+        "step": {
+            "confirm": {
+                "description": "Do you want to set up?"
+            },
+            "user": {
+                "data": {},
+                "description": "Click OK to add intergration"
+            }
+        }
+    },
+    "options": {
+        "step": {
+            "init": {
+                "title": "Extend Switch Options",
+                "data": {
+                    "add_another": "Select to add a switch"
+                },
+                "description": "If unchecked it will be deleted"
+            },
+            "entity": {
+                "title": "add entity",
+                "data": {
+                    "switch_entity": "input original entity",
+                    "name": "extend switch name",
+                    "push_wait_time": "input push wait time(seconds)",
+                    "add_another": "add more switch"
+                }
+            }
+        }
+    }
+}
