@@ -58,7 +58,8 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
                 device,
                 entity[CONF_NAME],
                 entity[CONF_SWITCH_ENTITY],
-                entity[CONF_PUSH_WAIT_TIME]
+                entity[CONF_PUSH_WAIT_TIME],
+                entity[CONF_PUSH_MAX]
             )
         )
 
@@ -159,15 +160,14 @@ class NumberBase(NumberEntity):
 class ExtendSwitch(NumberBase):
     """Representation of a Thermal Comfort Sensor."""
 
-    def __init__(self, hass, device, entity_name, switch_entity, push_wait_time):
+    def __init__(self, hass, device, entity_name, switch_entity, push_wait_time, push_max):
         """Initialize the sensor."""
         super().__init__(device)
 
         self.hass = hass
         self._switch_entity = switch_entity
 
-        self.entity_id = async_generate_entity_id(
-            ENTITY_ID_FORMAT, "{}_{}".format(switch_entity, NAME), hass=hass)
+        self.entity_id = async_generate_entity_id(ENTITY_ID_FORMAT, "{}_{}".format(switch_entity, NAME), hass=hass)
         self._name = "{}".format(entity_name)
         # self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
         self._unit_of_measurement = "push"
@@ -179,19 +179,18 @@ class ExtendSwitch(NumberBase):
         self._entity_picture = None
         self._reset_timer = None
         self._push_wait_time = push_wait_time
-        self._push_count = PUSH_MIN
+        self._push_count = NUMBER_MIN
+        self._push_max = push_max
 
         # self._device_class = SENSOR_TYPES[sensor_type][0]
         self._unique_id = self.entity_id
         self._device = device
-        self._value = PUSH_MIN
 
-        self._attr_step = PUSH_STEP
-        self._attr_min_value = PUSH_MIN
-        self._attr_max_value = PUSH_MAX
+        self._attr_step = NUMBER_STEP
+        self._attr_min_value = NUMBER_MIN
+        self._attr_max_value = NUMBER_MAX
 
-        hass.data[DOMAIN]["listener"].append(async_track_state_change(
-            self.hass, switch_entity, self.switch_entity_listener))
+        hass.data[DOMAIN]["listener"].append(async_track_state_change(self.hass, switch_entity, self.switch_entity_listener))
         state = self.hass.states.get(switch_entity)
         if _is_valid_state(state):
             self._attributes["switch state"] = state.state
@@ -199,17 +198,28 @@ class ExtendSwitch(NumberBase):
 
     def switch_entity_listener(self, entity, old_state, new_state):
         try:
+            _LOGGER.debug("call switch_entity_listener, old state : %s, new_state : %s", old_state.state, new_state.state)
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
                 if new_state.state == "on" or new_state.state == "off":
                     if new_state.state != old_state.state:
                         self._attributes["switch state"] = new_state.state
-                        self._push_count = self._push_count + 1
-                        self.set_value(self._push_count)
+                        self._push_count = int(min(self._push_count + 1, self._push_max))
+                        if int(self._push_count) != 0:
+                            if self._reset_timer != None:
+                                self._reset_timer.cancel()
+                            _LOGGER.debug("push count : %d", self._push_count)
+                            self._reset_timer = Timer(self._push_wait_time/1000, self.reset)
+                            self._reset_timer.start()
 
             self.schedule_update_ha_state(True)
         except:
             ''
+
+    def reset(self) -> None:
+        self._device.publish_updates()
+        self._push_count = NUMBER_MIN
+        self._device.publish_updates()
 
     # def unique_id(self):
     #    """Return Unique ID string."""
@@ -246,7 +256,7 @@ class ExtendSwitch(NumberBase):
     def state(self):
         """Return the state of the sensor."""
         # return self._state
-        return self._value
+        return self._push_count
 
     # @property
     # def device_class(self) -> Optional[str]:
@@ -272,23 +282,6 @@ class ExtendSwitch(NumberBase):
 
     def update(self):
         """Update the state."""
-
-    def set_value(self, value: float) -> None:
-        if int(value) != 0:
-            _LOGGER.debug("set value : %f", value)
-            if self._reset_timer != None:
-                self._reset_timer.cancel()
-                _LOGGER.debug("cancel timer")
-            self._reset_timer = Timer(
-                self._push_wait_time/1000, self.reset, [self, value])
-            self._reset_timer.start()
-
-    def reset(self, *args) -> None:
-        self._value = int(args[1])
-        self._device.publish_updates()
-        self._value = PUSH_MIN
-        self._push_count = PUSH_MIN
-        self._device.publish_updates()
 
 
 def _is_valid_state(state) -> bool:

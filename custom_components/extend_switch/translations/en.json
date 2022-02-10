@@ -26,6 +26,7 @@
                     "switch_entity": "input original entity",
                     "name": "extend switch name",
                     "push_wait_time": "continuous push latency(milliseconds) - ex) 1000ms = 1s)",
+                    "push_max": "Maximum number of consecutive presses",
                     "add_another": "add more switch"
                 }
             }

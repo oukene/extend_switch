@@ -7,7 +7,7 @@ import homeassistant.helpers.config_validation as cv
 # name for the integration.
 DOMAIN = "extend_switch"
 NAME = "Extend Switch"
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 CONF_DEVICE_NAME = "device_name"
 CONF_SWITCH_ENTITY = "switch_entity"
@@ -15,10 +15,13 @@ CONF_PUSH_WAIT_TIME = "push_wait_time"
 CONF_SWITCHES = "switches"
 CONF_ADD_ANODHER = "add_another"
 CONF_NAME = "name"
+CONF_PUSH_MAX = "push_max"
 
-PUSH_MIN = 0
-PUSH_MAX = 100
-PUSH_STEP = 1
+
+NUMBER_MIN = 0
+NUMBER_MAX = 100
+NUMBER_STEP = 1
+PUSH_MAX = 10
 
 OPTIONS = [
     (CONF_SWITCH_ENTITY, "", cv.string),

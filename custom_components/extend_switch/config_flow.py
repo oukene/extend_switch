@@ -21,7 +21,7 @@ from homeassistant.helpers.device_registry import (
     async_entries_for_config_entry
 )
 
-from .const import CONF_PUSH_WAIT_TIME, CONF_SWITCH_ENTITY, CONF_SWITCHES, DOMAIN, CONF_ADD_ANODHER, CONF_NAME, NAME
+from .const import CONF_PUSH_MAX, CONF_PUSH_WAIT_TIME, CONF_SWITCH_ENTITY, CONF_SWITCHES, DOMAIN, CONF_ADD_ANODHER, CONF_NAME, NAME, PUSH_MAX
 
 from homeassistant.helpers.device_registry import (
     async_get_registry,
@@ -108,17 +108,13 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         all_entities_by_id = {}
 
         entity_registry = await homeassistant.helpers.entity_registry.async_get_registry(self.hass)
-        entities = homeassistant.helpers.entity_registry.async_entries_for_config_entry(
-            entity_registry, self.config_entry.entry_id)
+        entities = homeassistant.helpers.entity_registry.async_entries_for_config_entry(entity_registry, self.config_entry.entry_id)
 
         device_registry = await async_get_registry(self.hass)
-        devices = async_entries_for_config_entry(
-            device_registry, self.config_entry.entry_id)
+        devices = async_entries_for_config_entry(device_registry, self.config_entry.entry_id)
 
-        for e in entities:
-
-            _LOGGER.debug("entity id : %s, name : %s",
-                          e.entity_id, e.original_name)
+        #for e in entities:
+        #    _LOGGER.debug("entity id : %s, name : %s",e.entity_id, e.original_name)
 
         # Default value for our multi-select.
 
@@ -131,7 +127,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         name, host[CONF_SWITCH_ENTITY])
 
                     all_entities_by_id[(
-                        host[CONF_SWITCH_ENTITY], host[CONF_NAME], host[CONF_PUSH_WAIT_TIME])] = e.entity_id
+                                        host[CONF_SWITCH_ENTITY], 
+                                        host[CONF_NAME],
+                                        host[CONF_PUSH_WAIT_TIME],
+                                        host[CONF_PUSH_MAX]
+                                    )] = e.entity_id
 
         if user_input is not None:
             if not errors:
@@ -151,6 +151,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                                 CONF_SWITCH_ENTITY: key[0],
                                 CONF_NAME: key[1],
                                 CONF_PUSH_WAIT_TIME: key[2],
+                                CONF_PUSH_MAX: key[3]
                             }
                         )
 
@@ -196,6 +197,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         CONF_SWITCH_ENTITY: user_input[CONF_SWITCH_ENTITY],
                         CONF_NAME: user_input.get(CONF_NAME, user_input[CONF_SWITCH_ENTITY]),
                         CONF_PUSH_WAIT_TIME: user_input[CONF_PUSH_WAIT_TIME],
+                        CONF_PUSH_MAX: user_input[CONF_PUSH_MAX],
                     }
                 )
 
@@ -218,6 +220,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                         vol.Required(CONF_SWITCH_ENTITY, default=None): cv.string,
                         vol.Optional(CONF_NAME): cv.string,
                         vol.Required(CONF_PUSH_WAIT_TIME, default=1000): int,
+                        vol.Required(CONF_PUSH_MAX, default=PUSH_MAX): int,
                         vol.Optional(CONF_ADD_ANODHER): cv.boolean,
                     }
             ), errors=errors
