@@ -21,6 +21,11 @@ HACS 의 custom repository에 https://github.com/oukene/extend_switch 주소를 
 추가 한 후 다시 읽어오기 필수!
 
 
+연속 누름 최대 횟수 이상 눌려지게 되면 최대 횟수로 고정입니다.
+
+ex) 최대 횟수가 2로 되어있으면 10번을 눌러도 2로 실행
+
+
 ![settings.jpg](https://github.com/oukene/extend_switch/blob/main/images/settings.jpg?raw=true)
 ![settings2.jpg](https://github.com/oukene/extend_switch/blob/main/images/settings2.jpg?raw=true)
 
