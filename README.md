@@ -11,8 +11,9 @@ on / off 가 있는 구성요소의 반복 on / off 를 통해 연속 눌림을 
 - 소스코드를 다운로드 받은 후 HA 내부의 custom_components 경로에 extend_switch 폴더를 넣어주고 재시작
 
 
-- HACS
-HACS 의 custom repository에 https://github.com/oukene/extend_switch 주소를 integration 으로 추가 후 설치
+HACS
+
+- HACS 의 custom repository에 https://github.com/oukene/extend_switch 주소를 integration 으로 추가 후 설치
 
 
 
