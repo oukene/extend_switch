@@ -27,7 +27,7 @@ from .const import *
 from homeassistant.exceptions import TemplateError
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity, async_generate_entity_id
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change, track_state_change
 from homeassistant.components.number import NumberEntity, NumberEntityDescription
 
 import math
@@ -52,8 +52,6 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
     new_devices = []
 
     for entity in config_entry.data.get(CONF_SWITCHES):
-        _LOGGER.debug("add entity : %s, %s, %s",
-                      entity[CONF_NAME], entity[CONF_SWITCH_ENTITY], entity[CONF_PUSH_WAIT_TIME])
         new_devices.append(
             ExtendSwitch(
                 hass,
@@ -176,10 +174,12 @@ class ExtendSwitch(NumberBase):
         self._state = None
         self._attributes = {}
         self._attributes["original entity id"] = switch_entity
+        self._attributes["push wait time"] = push_wait_time
         self._icon = None
         self._entity_picture = None
         self._reset_timer = None
         self._push_wait_time = push_wait_time
+        self._push_count = PUSH_MIN
 
         # self._device_class = SENSOR_TYPES[sensor_type][0]
         self._unique_id = self.entity_id
@@ -198,15 +198,16 @@ class ExtendSwitch(NumberBase):
             self._switch_state = state.state
 
     def switch_entity_listener(self, entity, old_state, new_state):
-        _LOGGER.debug("call switch listener")
         try:
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
                 if new_state.state == "on" or new_state.state == "off":
-                    self._attributes["switch state"] = new_state.state
-                    self.set_value(self._value + 1)
+                    if new_state.state != old_state.state:
+                        self._attributes["switch state"] = new_state.state
+                        self._push_count = self._push_count + 1
+                        self.set_value(self._push_count)
 
-            self.async_schedule_update_ha_state(True)
+            self.schedule_update_ha_state(True)
         except:
             ''
 
@@ -273,21 +274,21 @@ class ExtendSwitch(NumberBase):
         """Update the state."""
 
     def set_value(self, value: float) -> None:
-        _LOGGER.debug("set value : %d", value)
-        if int(value) > 0:
+        if int(value) != 0:
+            _LOGGER.debug("set value : %f", value)
             if self._reset_timer != None:
                 self._reset_timer.cancel()
-                _LOGGER.debug("cancel timer!!")
-            self._reset_timer = Timer(self._push_wait_time, self.reset)
+                _LOGGER.debug("cancel timer")
+            self._reset_timer = Timer(
+                self._push_wait_time/1000, self.reset, [self, value])
             self._reset_timer.start()
 
-        self._value = int(value)
+    def reset(self, *args) -> None:
+        self._value = int(args[1])
         self._device.publish_updates()
-
-    def reset(self):
-        _LOGGER.debug("reset")
-        self.set_value(0)
-        self._reset_timer = None
+        self._value = PUSH_MIN
+        self._push_count = PUSH_MIN
+        self._device.publish_updates()
 
 
 def _is_valid_state(state) -> bool:

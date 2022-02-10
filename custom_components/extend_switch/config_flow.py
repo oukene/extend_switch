@@ -217,7 +217,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     {
                         vol.Required(CONF_SWITCH_ENTITY, default=None): cv.string,
                         vol.Optional(CONF_NAME): cv.string,
-                        vol.Required(CONF_PUSH_WAIT_TIME, default=0.5): float,
+                        vol.Required(CONF_PUSH_WAIT_TIME, default=1000): int,
                         vol.Optional(CONF_ADD_ANODHER): cv.boolean,
                     }
             ), errors=errors
