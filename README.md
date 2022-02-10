@@ -19,7 +19,7 @@ HACS 의 custom repository에 https://github.com/oukene/extend_switch 주소를 
 설치 후 통합구성요소 추가하기에서 extend switch 검색 하여 설치한 후 구성 옵션 변경을 통해서 추가 가능합니다.
 
 
-![settings.jpg](https://raw.githubusercontent.com/oukene/extend_switch/main/images/settings.jpg)
+![settings.jpg](https://github.com/oukene/extend_switch/blob/main/images/settings.jpg?raw=true)
 
 
 
