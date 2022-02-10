@@ -20,6 +20,7 @@ HACS 의 custom repository에 https://github.com/oukene/extend_switch 주소를 
 
 
 ![settings.jpg](https://github.com/oukene/extend_switch/blob/main/images/settings.jpg?raw=true)
+![settings2.jpg](https://github.com/oukene/extend_switch/blob/main/images/settings2.jpg?raw=true)
 
 
 
