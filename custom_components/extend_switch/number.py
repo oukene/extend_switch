@@ -204,18 +204,20 @@ class ExtendSwitch(NumberBase):
                 if new_state.state == "on" or new_state.state == "off":
                     if new_state.state != old_state.state:
                         self._attributes["switch state"] = new_state.state
-                        self._push_count = int(min(self._push_count + 1, self._push_max))
-                        if int(self._push_count) != 0:
-                            if self._reset_timer != None:
-                                self._reset_timer.cancel()
-                            _LOGGER.debug("push count : %d", self._push_count)
-                            self._reset_timer = Timer(self._push_wait_time/1000, self.reset)
-                            self._reset_timer.start()
+                        self.set_value(int(self._push_count + 1))
 
             self.schedule_update_ha_state(True)
         except:
             ''
-
+    def set_value(self, value: float) -> None:
+        self._push_count = int(min(self._push_max, int(value)))
+        _LOGGER.debug("call set value : %f", self._push_count)
+        if int(self._push_count) != 0:
+            if self._reset_timer != None:
+                self._reset_timer.cancel()
+            self._reset_timer = Timer(self._push_wait_time/1000, self.reset)
+            self._reset_timer.start()
+        
     def reset(self) -> None:
         self._device.publish_updates()
         self._push_count = NUMBER_MIN
@@ -282,6 +284,7 @@ class ExtendSwitch(NumberBase):
 
     def update(self):
         """Update the state."""
+
 
 
 def _is_valid_state(state) -> bool:
