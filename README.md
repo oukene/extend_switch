@@ -29,6 +29,7 @@ HACS 의 custom repository에 https://github.com/oukene/extend_switch 주소를 
 History
 <br>
 v1.0.0 - 2022.02.10 - 최초 작성<br>
+v1.1.0 - 2022.02.10 - 연속 눌림 최대 횟수 추가<br>
 
 ---
 <br><br><br>
