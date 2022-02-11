@@ -181,6 +181,7 @@ class ExtendSwitch(NumberBase):
         self._push_wait_time = push_wait_time
         self._push_count = NUMBER_MIN
         self._push_max = push_max
+        self._value = NUMBER_MIN
 
         # self._device_class = SENSOR_TYPES[sensor_type][0]
         self._unique_id = self.entity_id
@@ -219,8 +220,10 @@ class ExtendSwitch(NumberBase):
             self._reset_timer.start()
         
     def reset(self) -> None:
+        self._value = self._push_count
         self._device.publish_updates()
         self._push_count = NUMBER_MIN
+        self._value = NUMBER_MIN
         self._device.publish_updates()
 
     # def unique_id(self):
@@ -258,7 +261,7 @@ class ExtendSwitch(NumberBase):
     def state(self):
         """Return the state of the sensor."""
         # return self._state
-        return self._push_count
+        return self._value
 
     # @property
     # def device_class(self) -> Optional[str]:
