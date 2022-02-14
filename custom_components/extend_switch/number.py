@@ -167,7 +167,8 @@ class ExtendSwitch(NumberBase):
         self.hass = hass
         self._switch_entity = switch_entity
 
-        self.entity_id = async_generate_entity_id(ENTITY_ID_FORMAT, "{}_{}".format(switch_entity, NAME), hass=hass)
+        self.entity_id = async_generate_entity_id(
+            ENTITY_ID_FORMAT, "{}_{}".format(switch_entity, NAME), hass=hass)
         self._name = "{}".format(entity_name)
         # self._name = "{} {}".format(device.device_id, SENSOR_TYPES[sensor_type][1])
         self._unit_of_measurement = "push"
@@ -182,6 +183,7 @@ class ExtendSwitch(NumberBase):
         self._push_count = NUMBER_MIN
         self._push_max = push_max
         self._value = NUMBER_MIN
+        self._force_off = False
 
         # self._device_class = SENSOR_TYPES[sensor_type][0]
         self._unique_id = self.entity_id
@@ -191,18 +193,27 @@ class ExtendSwitch(NumberBase):
         self._attr_min_value = NUMBER_MIN
         self._attr_max_value = NUMBER_MAX
 
-        hass.data[DOMAIN]["listener"].append(async_track_state_change(self.hass, switch_entity, self.switch_entity_listener))
+        hass.data[DOMAIN]["listener"].append(async_track_state_change(
+            self.hass, switch_entity, self.switch_entity_listener))
         state = self.hass.states.get(switch_entity)
+
         if _is_valid_state(state):
             self._attributes["switch state"] = state.state
             self._switch_state = state.state
+            if state.state == "on":
+                self._force_off = True
+                self.hass.services.call('homeassistant', 'turn_off', {
+                                        "entity_id": self._switch_entity}, False)
 
     def switch_entity_listener(self, entity, old_state, new_state):
         try:
-            _LOGGER.debug("call switch_entity_listener, old state : %s, new_state : %s", old_state.state, new_state.state)
+            if self._force_off == True:
+                self._force_off = False
+                return
+            _LOGGER.debug("call switch_entity_listener, old state : %s, new_state : %s",old_state.state, new_state.state)
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
-                if new_state.state == "on" or new_state.state == "off":
+                if (new_state.state == "on" or new_state.state == "off") and (old_state.state == "on" or old_state.state == "off"):
                     if new_state.state != old_state.state:
                         self._attributes["switch state"] = new_state.state
                         self.set_value(int(self._push_count + 1))
@@ -210,6 +221,7 @@ class ExtendSwitch(NumberBase):
             self.schedule_update_ha_state(True)
         except:
             ''
+
     def set_value(self, value: float) -> None:
         self._push_count = int(min(self._push_max, int(value)))
         _LOGGER.debug("call set value : %f", self._push_count)
@@ -218,12 +230,19 @@ class ExtendSwitch(NumberBase):
                 self._reset_timer.cancel()
             self._reset_timer = Timer(self._push_wait_time/1000, self.reset)
             self._reset_timer.start()
-        
+
     def reset(self) -> None:
         self._value = self._push_count
         self._device.publish_updates()
         self._push_count = NUMBER_MIN
         self._value = NUMBER_MIN
+
+        state = self.hass.states.get(self._switch_entity)
+        if _is_valid_state(state):
+            if state.state == "on":
+                self._force_off = True
+                self.hass.services.call('homeassistant', 'turn_off', {"entity_id": self._switch_entity}, False)
+
         self._device.publish_updates()
 
     # def unique_id(self):
@@ -287,7 +306,6 @@ class ExtendSwitch(NumberBase):
 
     def update(self):
         """Update the state."""
-
 
 
 def _is_valid_state(state) -> bool:

@@ -143,9 +143,11 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
 
                 for key in all_entities_by_id:
                     if all_entities_by_id[key] not in user_input[CONF_SWITCHES]:
+                        _LOGGER.debug("remove entity : %s", all_entities_by_id[key])
                         remove_entities.append(all_entities_by_id[key])
                         #self.config_entry.data[CONF_DEVICES].remove( { host[CONF_HOST], [e.name for e in devices if e.id == all_devices_by_host[host[CONF_HOST]]] })
                     else:
+                        _LOGGER.debug("append entity : %s", key[0])
                         self.data[CONF_SWITCHES].append(
                             {
                                 CONF_SWITCH_ENTITY: key[0],
