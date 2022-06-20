@@ -207,18 +207,21 @@ class ExtendSwitch(NumberBase):
 
     def switch_entity_listener(self, entity, old_state, new_state):
         try:
-            if self._force_off == True:
-                self._force_off = False
-                return
-            _LOGGER.debug("call switch_entity_listener, old state : %s, new_state : %s",old_state.state, new_state.state)
+            _LOGGER.debug("call switch_entity_listener, old state : %s, new_state : %s",
+                          old_state.state, new_state.state)
             """Handle temperature device state changes."""
             if _is_valid_state(new_state):
                 if (new_state.state == "on" or new_state.state == "off") and (old_state.state == "on" or old_state.state == "off"):
                     if new_state.state != old_state.state:
+                        if self._force_off == True:
+                            self._force_off = False
+                            _LOGGER.debug("return force off")
+                            return
                         self._attributes["switch state"] = new_state.state
                         self.set_value(int(self._push_count + 1))
 
-            self.schedule_update_ha_state(True)
+                        # 이걸 count가 올라갈때만 처리 해야 할지 고민
+                        self.schedule_update_ha_state(True)
         except:
             ''
 
@@ -240,11 +243,13 @@ class ExtendSwitch(NumberBase):
         state = self.hass.states.get(self._switch_entity)
         if _is_valid_state(state):
             if state.state == "on":
+                _LOGGER.debug("set force off")
                 self._force_off = True
-                self.hass.services.call('homeassistant', 'turn_off', {"entity_id": self._switch_entity}, False)
+                self.hass.services.call('homeassistant', 'turn_off', {
+                                        "entity_id": self._switch_entity}, False)
 
+        # 여기에 있었지만 위치 바꿈
         self._device.publish_updates()
-
     # def unique_id(self):
     #    """Return Unique ID string."""
     #    return self.unique_id
