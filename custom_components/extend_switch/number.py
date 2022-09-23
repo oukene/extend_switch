@@ -28,7 +28,7 @@ from homeassistant.exceptions import TemplateError
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.entity import Entity, async_generate_entity_id
 from homeassistant.helpers.event import async_track_state_change, track_state_change
-from homeassistant.components.number import NumberEntity, NumberEntityDescription
+from homeassistant.components.number import NumberEntity
 
 import math
 
@@ -47,33 +47,34 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
     hass.data[DOMAIN]["listener"] = []
 
-    device = Device(NAME)
+    device = Device(NAME, config_entry)
 
     new_devices = []
 
-    for entity in config_entry.data.get(CONF_SWITCHES):
-        new_devices.append(
-            ExtendSwitch(
-                hass,
-                device,
-                entity[CONF_NAME],
-                entity[CONF_SWITCH_ENTITY],
-                entity[CONF_PUSH_WAIT_TIME],
-                entity[CONF_PUSH_MAX]
+    if config_entry.options.get(CONF_SWITCHES) != None:
+        for entity in config_entry.options.get(CONF_SWITCHES):
+            new_devices.append(
+                ExtendSwitch(
+                    hass,
+                    device,
+                    entity[CONF_NAME],
+                    entity[CONF_SWITCH_ENTITY],
+                    entity[CONF_PUSH_WAIT_TIME],
+                    entity[CONF_PUSH_MAX]
+                )
             )
-        )
 
-    if new_devices:
-        async_add_devices(new_devices)
+        if new_devices:
+            async_add_devices(new_devices)
 
 
 class Device:
     """Dummy roller (device for HA) for Hello World example."""
 
-    def __init__(self, name):
+    def __init__(self, name, config):
         """Init dummy roller."""
-        self._id = name
-        self.name = name
+        self._id = f"{name}_{config.entry_id}"
+        self._name = name
         self._callbacks = set()
         self._loop = asyncio.get_event_loop()
         # Reports if the roller is moving up or down.
@@ -88,6 +89,10 @@ class Device:
     def device_id(self):
         """Return ID for roller."""
         return self._id
+
+    @property
+    def name(self):
+        return self._name
 
     def register_callback(self, callback):
         """Register callback, called when Roller changes state."""
@@ -133,7 +138,7 @@ class NumberBase(NumberEntity):
         return {
             "identifiers": {(DOMAIN, self._device.device_id)},
             # If desired, the name for the device could be different to the entity
-            "name": self._device.device_id,
+            "name": self._device.name,
             "sw_version": self._device.firmware_version,
             "model": self._device.model,
             "manufacturer": self._device.manufacturer
@@ -189,9 +194,9 @@ class ExtendSwitch(NumberBase):
         self._unique_id = self.entity_id
         self._device = device
 
-        self._attr_step = NUMBER_STEP
-        self._attr_min_value = NUMBER_MIN
-        self._attr_max_value = NUMBER_MAX
+        self._attr_native_step = NUMBER_STEP
+        self._attr_native_min_value = NUMBER_MIN
+        self._attr_native_max_value = NUMBER_MAX
 
         hass.data[DOMAIN]["listener"].append(async_track_state_change(
             self.hass, switch_entity, self.switch_entity_listener))
@@ -218,14 +223,14 @@ class ExtendSwitch(NumberBase):
                             _LOGGER.debug("return force off")
                             return
                         self._attributes["switch state"] = new_state.state
-                        self.set_value(int(self._push_count + 1))
+                        self.set_native_value(int(self._push_count + 1))
 
                         # 이걸 count가 올라갈때만 처리 해야 할지 고민
                         self.schedule_update_ha_state(True)
         except:
             ''
 
-    def set_value(self, value: float) -> None:
+    def set_native_value(self, value: float) -> None:
         self._push_count = int(min(self._push_max, int(value)))
         _LOGGER.debug("call set value : %f", self._push_count)
         if int(self._push_count) != 0:
@@ -257,7 +262,7 @@ class ExtendSwitch(NumberBase):
     """Sensor Properties"""
 
     @property
-    def unit_of_measurement(self):
+    def native_unit_of_measurement(self):
         """Return the unit_of_measurement of the device."""
         return self._unit_of_measurement
 
@@ -267,14 +272,14 @@ class ExtendSwitch(NumberBase):
         return self._attributes
 
     @property
-    def min_value(self):
+    def native_min_value(self):
         """Return the name of the sensor."""
-        return self._attr_min_value
+        return self._attr_native_min_value
 
     @property
-    def max_value(self):
+    def native_max_value(self):
         """Return the name of the sensor."""
-        return self._attr_max_value
+        return self._attr_native_max_value
 
     @property
     def name(self):
@@ -283,6 +288,12 @@ class ExtendSwitch(NumberBase):
 
     @property
     def state(self):
+        """Return the state of the sensor."""
+        # return self._state
+        return self._value
+
+    @property
+    def native_value(self):
         """Return the state of the sensor."""
         # return self._state
         return self._value
