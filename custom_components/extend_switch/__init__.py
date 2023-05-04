@@ -9,7 +9,7 @@ from .const import CONF_DEVICE_NAME
 from .const import DOMAIN
 
 from homeassistant.helpers.device_registry import (
-    async_get_registry,
+    async_get,
     async_entries_for_config_entry
 )
 
@@ -35,7 +35,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Store an instance of the "connecting" class that does the work of speaking
     # with your actual devices.
     _LOGGER.debug("call async_setup_entry")
-    hass.data[DOMAIN][entry.entry_id] = DOMAIN
+    #hass.data[DOMAIN][entry.entry_id] = DOMAIN
+    hass.data[DOMAIN][entry.entry_id] = {}
+    hass.data[DOMAIN][entry.entry_id]["listener"] = []
 
     entry.async_on_unload(entry.add_update_listener(update_listener))
     # This creates each HA object for each platform your device requires.
@@ -59,7 +61,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     # details
     _LOGGER.debug("call async_unload_entry")
 
-    for listener in hass.data[DOMAIN]["listener"]:
+    for listener in hass.data[DOMAIN][entry.entry_id]["listener"]:
         listener()
     
     unload_ok = all(

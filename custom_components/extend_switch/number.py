@@ -6,6 +6,7 @@
 # what the unit is, so it can display the correct range. For predefined types (such as
 # battery), the unit_of_measurement should match what's expected.
 import decimal
+from distutils.command.config import config
 import random
 import logging
 from threading import Timer
@@ -45,8 +46,8 @@ ENTITY_ID_FORMAT = DOMAIN + ".{}"
 async def async_setup_entry(hass, config_entry, async_add_devices):
     """Add sensors for passed config_entry in HA."""
 
-    hass.data[DOMAIN]["listener"] = []
-
+    hass.data[DOMAIN][config_entry.entry_id]["listener"] = []
+    
     device = Device(NAME, config_entry)
 
     new_devices = []
@@ -56,6 +57,7 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
             new_devices.append(
                 ExtendSwitch(
                     hass,
+                    config_entry.entry_id,
                     device,
                     entity[CONF_NAME],
                     entity[CONF_SWITCH_ENTITY],
@@ -66,7 +68,6 @@ async def async_setup_entry(hass, config_entry, async_add_devices):
 
         if new_devices:
             async_add_devices(new_devices)
-
 
 class Device:
     """Dummy roller (device for HA) for Hello World example."""
@@ -165,7 +166,7 @@ class NumberBase(NumberEntity):
 class ExtendSwitch(NumberBase):
     """Representation of a Thermal Comfort Sensor."""
 
-    def __init__(self, hass, device, entity_name, switch_entity, push_wait_time, push_max):
+    def __init__(self, hass, entry_id, device, entity_name, switch_entity, push_wait_time, push_max):
         """Initialize the sensor."""
         super().__init__(device)
 
@@ -198,7 +199,7 @@ class ExtendSwitch(NumberBase):
         self._attr_native_min_value = NUMBER_MIN
         self._attr_native_max_value = NUMBER_MAX
 
-        hass.data[DOMAIN]["listener"].append(async_track_state_change(
+        hass.data[DOMAIN][entry_id]["listener"].append(async_track_state_change(
             self.hass, switch_entity, self.switch_entity_listener))
         state = self.hass.states.get(switch_entity)
 
