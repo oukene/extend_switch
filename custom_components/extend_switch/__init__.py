@@ -4,14 +4,9 @@ import logging
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
-from .const import CONF_DEVICE_NAME
 
 from .const import DOMAIN
 
-from homeassistant.helpers.device_registry import (
-    async_get,
-    async_entries_for_config_entry
-)
 
 _LOGGER = logging.getLogger(__name__)
 

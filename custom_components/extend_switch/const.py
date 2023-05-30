@@ -1,5 +1,4 @@
 """Constants for the Detailed Hello World Push integration."""
-from typing import DefaultDict
 import voluptuous as vol
 import homeassistant.helpers.config_validation as cv
 
@@ -7,7 +6,7 @@ import homeassistant.helpers.config_validation as cv
 # name for the integration.
 DOMAIN = "extend_switch"
 NAME = "Extend Switch"
-VERSION = "1.1.4"
+VERSION = "1.1.5"
 
 CONF_DEVICE_NAME = "device_name"
 CONF_SWITCH_ENTITY = "switch_entity"
