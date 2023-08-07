@@ -13,7 +13,7 @@ from homeassistant.helpers.device_registry import (
     async_entries_for_config_entry
 )
 
-from homeassistant.helpers import selector
+from homeassistant.helpers.selector import selector
 
 from .const import CONF_PUSH_MAX, CONF_PUSH_WAIT_TIME, CONF_SWITCH_ENTITY, CONF_SWITCHES, DOMAIN, CONF_ADD_ANODHER, CONF_NAME, NAME, PUSH_MAX
 
