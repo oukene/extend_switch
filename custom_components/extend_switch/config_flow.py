@@ -13,6 +13,8 @@ from homeassistant.helpers.device_registry import (
     async_entries_for_config_entry
 )
 
+from homeassistant.helpers import selector
+
 from .const import CONF_PUSH_MAX, CONF_PUSH_WAIT_TIME, CONF_SWITCH_ENTITY, CONF_SWITCHES, DOMAIN, CONF_ADD_ANODHER, CONF_NAME, NAME, PUSH_MAX
 
 from homeassistant import config_entries, core, exceptions
@@ -216,7 +218,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
             step_id="entity",
             data_schema=vol.Schema(
                     {
-                        vol.Required(CONF_SWITCH_ENTITY, default=None): cv.string,
+                        vol.Required(CONF_SWITCH_ENTITY, default=None): selector({"entity": {}}),
                         vol.Optional(CONF_NAME): cv.string,
                         vol.Required(CONF_PUSH_WAIT_TIME, default=1000): int,
                         vol.Required(CONF_PUSH_MAX, default=PUSH_MAX): int,
