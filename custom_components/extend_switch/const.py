@@ -6,7 +6,7 @@ import homeassistant.helpers.config_validation as cv
 # name for the integration.
 DOMAIN = "extend_switch"
 NAME = "Extend Switch"
-VERSION = "1.1.6"
+VERSION = "1.1.7"
 
 CONF_DEVICE_NAME = "device_name"
 CONF_SWITCH_ENTITY = "switch_entity"
