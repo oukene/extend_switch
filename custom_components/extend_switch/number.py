@@ -6,6 +6,7 @@
 # what the unit is, so it can display the correct range. For predefined types (such as
 # battery), the unit_of_measurement should match what's expected.
 import logging
+import time
 from threading import Timer
 from xmlrpc.client import boolean
 from homeassistant.const import (
@@ -141,12 +142,12 @@ class NumberBase(NumberEntity):
     async def async_added_to_hass(self):
         """Run when this Entity has been added to HA."""
         # Sensors should also register callbacks to HA when their state changes
-        self._device.register_callback(self.async_write_ha_state)
+        self._device.register_callback(self.schedule_update_ha_state)
 
     async def async_will_remove_from_hass(self):
         """Entity being removed from hass."""
         # The opposite of async_added_to_hass. Remove any registered call backs here.
-        self._device.remove_callback(self.async_write_ha_state)
+        self._device.remove_callback(self.schedule_update_ha_state)
 
 
 class ExtendSwitch(NumberBase):
@@ -213,7 +214,7 @@ class ExtendSwitch(NumberBase):
                         self.set_native_value(int(self._push_count + 1))
 
                         # 이걸 count가 올라갈때만 처리 해야 할지 고민
-                        self.schedule_update_ha_state(True)
+                        #self.schedule_update_ha_state(True)
         except:
             ''
 
@@ -229,6 +230,7 @@ class ExtendSwitch(NumberBase):
     def reset(self) -> None:
         self._value = self._push_count
         self._device.publish_updates()
+        time.sleep(0.1)
         self._push_count = NUMBER_MIN
         self._value = NUMBER_MIN
 
