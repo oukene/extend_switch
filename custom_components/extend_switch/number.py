@@ -16,7 +16,8 @@ from homeassistant.const import (
 import asyncio
 from .const import *
 from homeassistant.helpers.entity import async_generate_entity_id
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change_event
+from homeassistant.core import Event, EventStateChangedData, callback
 from homeassistant.components.number import NumberEntity
 
 
@@ -186,7 +187,7 @@ class ExtendSwitch(NumberBase):
         self._attr_native_min_value = NUMBER_MIN
         self._attr_native_max_value = NUMBER_MAX
 
-        hass.data[DOMAIN][entry_id]["listener"].append(async_track_state_change(
+        hass.data[DOMAIN][entry_id]["listener"].append(async_track_state_change_event(
             self.hass, switch_entity, self.switch_entity_listener))
         state = self.hass.states.get(switch_entity)
 
@@ -198,7 +199,11 @@ class ExtendSwitch(NumberBase):
                 self.hass.services.call('homeassistant', 'turn_off', {
                                         "entity_id": self._switch_entity}, False)
 
-    def switch_entity_listener(self, entity, old_state, new_state):
+    @callback
+    def switch_entity_listener(self, event:Event):
+        entity = event.data["entity_id"]
+        old_state = event.data["old_state"]
+        new_state = event.data["new_state"]
         try:
             _LOGGER.debug("call switch_entity_listener, old state : %s, new_state : %s",
                           old_state.state, new_state.state)
