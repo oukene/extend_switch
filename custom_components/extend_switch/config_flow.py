@@ -19,8 +19,6 @@ from .const import CONF_PUSH_MAX, CONF_PUSH_WAIT_TIME, CONF_SWITCH_ENTITY, CONF_
 
 from homeassistant import config_entries, core, exceptions
 from homeassistant.core import callback
-from homeassistant.config import CONF_NAME
-
 
 _LOGGER = logging.getLogger(__name__)
 
