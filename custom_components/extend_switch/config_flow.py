@@ -72,7 +72,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     """Handles options flow for the component."""
 
     def __init__(self, config_entry) -> None:
-        self.config_entry = config_entry
         self.data = {}
         if CONF_SWITCHES in config_entry.options:
             self.data[CONF_SWITCHES] = config_entry.options[CONF_SWITCHES]
